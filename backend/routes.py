@@ -1,19 +1,16 @@
-from fastapi import APIRouter
-from sqlalchemy import Date
 from pydantic import BaseModel, Field
 
 from backend.models import ReimbursementStatus, Reimbursement
 
 from datetime import datetime, date
 from typing import Annotated, Literal
-from fastapi import Body, Query, Path
+from sqlalchemy import select, cast, Date
 from sqlalchemy.orm import Session
-from sqlalchemy import select, cast
-from backend.postgres import get_db
-from fastapi import Depends
-from fastapi import status as http_status
-from fastapi import HTTPException
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+from backend.postgres import get_db
+from fastapi import status as http_status
+from fastapi import HTTPException, Depends, BackgroundTasks, Body, Query, Path, APIRouter
+
 
 
 class CreateReimbursementRequest(BaseModel):
@@ -100,10 +97,15 @@ async def get_reimbursement(
         )
 
 
+def mock_email(to_email: str, subject: str, body: str):
+    print("Email sent")
+
+
 @router.patch("/reimbursements/{reimbursement_id}")
 async def update_reimbursement(
         reimbursement_id: Annotated[int, Path()],
         body: Annotated[UpdateReimbursementRequest, Body(description="Reimbursement request")],
+        background_tasks: BackgroundTasks,
         db: Session = Depends(get_db),
 ):
     """
@@ -140,6 +142,13 @@ async def update_reimbursement(
 
     db.commit()
     db.refresh(reimbursement)
+
+    background_tasks.add_task(
+        mock_email,
+        reimbursement.bank_account.bank_member.email,
+        "Reimbursement Status Update",
+        "Your reimbursement has been " + body.status.value
+    )
 
     return reimbursement
 
