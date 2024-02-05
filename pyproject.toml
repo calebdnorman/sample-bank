@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "backend"
+version = "0.1.0"
+description = "Backend processes to support banking functionality"
+authors = ["Caleb Norman <53488994+calebnorman@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.scripts]
+start = "backend.main:serve"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.109.2"
+SQLAlchemy = "^2.0.25"
+pydantic = "^2.6.0"
+psycopg2 = "^2.9.9"
+uvicorn = "^0.27.0.post1"
+pydantic-settings = "^2.1.0"
+httpx = "^0.26.0"
+pytest = "^8.0.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
